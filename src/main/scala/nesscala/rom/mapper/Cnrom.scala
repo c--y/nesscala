@@ -1,0 +1,24 @@
+package nesscala.rom.mapper
+
+import nesscala.rom.{NesFile, Mapper}
+
+/**
+ * Cnrom switches allowed swapping of CHR-ROM banks but not PRG-ROM.
+ *
+ * Created by chenyan on 15-5-31.
+ */
+class Cnrom(val nesFile: NesFile) extends Mapper{
+
+  override def read(address: Int): Byte = {
+    1.toByte
+  }
+
+  override def writeVram(address: Int, value: Byte): Unit = ???
+
+  override def write(address: Int, value: Byte): Unit = ???
+
+  override def readVram(address: Int): Byte = ???
+
+  override def step(): Unit = ???
+
+}
