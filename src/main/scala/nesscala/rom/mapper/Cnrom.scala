@@ -9,15 +9,15 @@ import nesscala.rom.{NesFile, Mapper}
  */
 class Cnrom(val nesFile: NesFile) extends Mapper{
 
-  override def read(address: Int): Byte = {
-    1.toByte
+  override def read(address: Int): Int = {
+    1
   }
 
   override def writeVram(address: Int, value: Byte): Unit = ???
 
   override def write(address: Int, value: Byte): Unit = ???
 
-  override def readVram(address: Int): Byte = ???
+  override def readVram(address: Int): Int = ???
 
   override def step(): Unit = ???
 

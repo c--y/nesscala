@@ -62,4 +62,38 @@ class StatusRegister {
   def setSign(value: Boolean) =
     v = BitUtils.setBit(v, 7, value)
 
+  def testAndSetNegative(value: Byte) =
+    setSign((value & 0x80) == 0x80)
+
+  def testAndSetZero(value: Byte) =
+    setZero(value == 0x00)
+
+  def testAndSetCarryPlus(value: Int) =
+    setCarry(value > 0xff)
+
+  def testAndSetCarryMinus(value: Int) =
+    setCarry(value >= 0x00)
+
+  /**
+   * a + b = c
+   *
+   * a与b符号相同, 且a与c符号不同, 则表明c值溢出了
+   *
+   * @param a
+   * @param b
+   * @param c
+   */
+  def testAndSetOverflowPlus(a: Int, b: Int, c: Int) =
+    setOverflow((((a ^ b) & 0x80) == 0x00) && (((a ^ c) & 0x80) == 0x80))
+
+  /**
+   * a - b - carry = c
+   *
+   * @param a
+   * @param b
+   */
+  def testAndSetOverflowMinus(a: Int, b: Int) = {
+    val result = a - b - (1 - (if (carry()) 1 else 0))
+    setOverflow(((a ^ result) & 0x80) != 0 && ((a ^ b) & 0x80) != 0)
+  }
 }

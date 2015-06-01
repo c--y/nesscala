@@ -15,11 +15,11 @@ class Unrom(val nesFile: NesFile) extends Mapper {
   var currentBank = 0
 
   // address all are unsigned short
-  override def read(address: Int): Byte = {
+  override def read(address: Int): Int = {
     if (address >= 0xc000) {
-      return nesFile.prgBanks(nesFile.prgBanks.length - 1)(address & 0x3fff)
+      return IntUtils.toUnsigned(nesFile.prgBanks(nesFile.prgBanks.length - 1)(address & 0x3fff))
     }
-    return nesFile.prgBanks(currentBank)(address & 0x3fff)
+    return IntUtils.toUnsigned(nesFile.prgBanks(currentBank)(address & 0x3fff))
   }
 
   override def write(address: Int, value: Byte): Unit = {
@@ -34,11 +34,11 @@ class Unrom(val nesFile: NesFile) extends Mapper {
     }
   }
 
-  override def readVram(address: Int): Byte = {
+  override def readVram(address: Int): Int = {
     if (address >= 0x1000) {
-      return nesFile.chrBanks(nesFile.chrBanks.length - 1)(address & 0xfff)
+      return IntUtils.toUnsigned(nesFile.chrBanks(nesFile.chrBanks.length - 1)(address & 0xfff))
     }
-    return nesFile.chrBanks(0)(address & 0xfff)
+    return IntUtils.toUnsigned(nesFile.chrBanks(0)(address & 0xfff))
   }
 
   override def step(): Unit = {}

@@ -12,13 +12,13 @@ import nesscala.rom.{Mapper, NesFile}
  */
 class Mmc3(val nesFile: NesFile) extends Mapper {
 
-  override def read(address: Int): Byte = ???
+  override def read(address: Int): Int = ???
 
   override def writeVram(address: Int, value: Byte): Unit = ???
 
   override def write(address: Int, value: Byte): Unit = ???
 
-  override def readVram(address: Int): Byte = ???
+  override def readVram(address: Int): Int = ???
 
   override def step(): Unit = ???
 }

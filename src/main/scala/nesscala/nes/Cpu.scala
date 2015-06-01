@@ -29,17 +29,22 @@ class Cpu (val ram: Memory) {
 
   var opcode: Byte = 0
 
+  var opcodeCycle: Long = 0
+
   def pushStack(v: Byte): Unit = {
     ram.write((0x100 + sp).toShort, v)
     sp = (sp - 1).toByte
   }
 
-  def pullStack(): Byte = {
+  def pullStack(): Int = {
     sp = (sp + 1).toByte
     ram.read((0x100 + sp).toShort)
   }
 
   // Address modes
+  def samePage(a1: Int, a2: Int): Boolean =
+    (a1 & 0xff00) == (a2 & 0xff00)
+
   def immediateAddress(): Int = {
     pc += 1
     pc - 1
@@ -49,7 +54,7 @@ class Cpu (val ram: Memory) {
     val high = ram.read(pc + 1)
     val low = ram.read(pc + 1)
     pc += 2
-    BitUtils.makeWord(low, high)
+    BitUtils.makeWord(low.toByte, high.toByte)
   }
 
   def zeroPageAddress(): Int = {
@@ -61,13 +66,13 @@ class Cpu (val ram: Memory) {
     val high = ram.read(address + 1)
     val low = ram.read(address)
 
-    val highAddr = BitUtils.makeWord(low, high)
-    val lowAddr = BitUtils.makeWord((IntUtils.toUnsigned(low) + 1).toByte, high)
+    val highAddr = BitUtils.makeWord(low.toByte, high.toByte)
+    val lowAddr = BitUtils.makeWord((low + 1).toByte, high.toByte)
 
     val hhigh = ram.read(highAddr)
     val llow = ram.read(lowAddr)
 
-    BitUtils.makeUint8(llow, hhigh)
+    BitUtils.makeUint8(llow.toByte, hhigh.toByte)
   }
 
   def absoluteIndexedAddress(index: Byte): Int = {
@@ -75,10 +80,9 @@ class Cpu (val ram: Memory) {
     val low = ram.read(pc)
 
     val uindex = IntUtils.toUnsigned(index)
-    var address = BitUtils.makeWord(low, high)
-    if ((address & 0xff00) != ((address + uindex) & 0xff00)) {
-      cycles += 1
-    }
+    var address = BitUtils.makeWord(low.toByte, high.toByte)
+    // 不同页罚项
+    cycles += (if (!samePage(address, address + uindex)) 1 else 0)
 
     address += uindex
     pc += 2
@@ -90,27 +94,26 @@ class Cpu (val ram: Memory) {
 
     val address = ram.read(pc)
     pc += 1
-    IntUtils.toUnsigned(address) + index
+    address + index
   }
 
   def indexedIndirectAddress(): Int = {
-    val address = IntUtils.toUnsigned(ram.read(pc)) + IntUtils.toUnsigned(x)
+    val address = ram.read(pc) + IntUtils.toUnsigned(x)
     pc += 1
     val high = ram.read(address + 1)
     val low = ram.read(address)
-    BitUtils.makeWord(low, high)
+    BitUtils.makeWord(low.toByte, high.toByte)
   }
 
   def indirectIndexedAddress(): Int = {
-    val address = IntUtils.toUnsigned(ram.read(pc))
+    val address = ram.read(pc)
     val high = ram.read(address + 1)
     val low = ram.read(address)
 
-    var indAddress = BitUtils.makeWord(low, high)
+    var indAddress = BitUtils.makeWord(low.toByte, high.toByte)
     val uy = IntUtils.toUnsigned(this.y)
-    if ((indAddress & 0xff00) != ((indAddress + uy) & 0xff00))) {
-      cycles += 1
-    }
+    // 位于不同页
+    cycles += (if (!samePage(indAddress, indAddress + uy)) 1 else 0)
 
     indAddress += uy
     pc += 1
@@ -118,13 +121,16 @@ class Cpu (val ram: Memory) {
   }
 
   def relativeAddress(): Int = {
-    var address = IntUtils.toUnsigned(ram.read(pc))
+    var address = ram.read(pc)
     address = if (address < 0x80) address + pc else address + (pc - 0x100)
     address + 1
   }
 
   def accumulatorAddress(): Int = 0
 
-
+  def penaliseBranchCycles(address: Int): Unit = {
+    // 判定pc 与 address是否为同一页, 如果是则多加1个时钟周期
+    cycles += (if (!samePage(pc - 1, address)) 2 else 1)
+  }
 
 }
