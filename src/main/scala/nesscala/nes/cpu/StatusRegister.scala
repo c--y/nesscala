@@ -74,6 +74,9 @@ class StatusRegister {
   def testAndSetCarryMinus(value: Int) =
     setCarry(value >= 0x00)
 
+  def testAndSetOverflow(value: Int) =
+    setOverflow((value & 0x40) > 0)
+
   /**
    * a + b = c
    *

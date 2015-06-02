@@ -10,9 +10,10 @@ class Memory(val size: Int) {
   val ram: Array[Byte] = new Array(size)
 
   def read(address: Int): Int =
-    IntUtils.toUnsigned(ram(address))
+    // TODO 是否应该做这个处理
+    //IntUtils.toUnsigned(ram(address))
+    ram(address)
 
   def write(address: Int, v: Byte) =
     ram(address) = v
-
 }

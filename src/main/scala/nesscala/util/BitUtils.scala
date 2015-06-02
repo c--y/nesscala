@@ -11,6 +11,9 @@ object BitUtils {
   def makeWord(low: Byte, high: Byte): Int =
     IntUtils.toUnsigned(low) | (IntUtils.toUnsigned(high) << 8)
 
+  def unpackWord(word: Int): (Byte, Byte) =
+    (((word & 0xff00) >> 8).toByte, (word & 0xff).toByte)
+
   def byteMask(nth: Byte): Int =
     nth match {
       case 0 => 0x1

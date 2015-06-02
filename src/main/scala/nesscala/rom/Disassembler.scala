@@ -124,7 +124,7 @@ object Disassembler {
     case 0xd5 => f"CMP "
     case 0xcd => f"CMP "
     case 0xdd => f"CMP "
-    case 0x09 => f"CMP "
+    case 0xd9 => f"CMP "
     case 0xc1 => f"CMP "
     case 0xd1 => f"CMP "
     /*
