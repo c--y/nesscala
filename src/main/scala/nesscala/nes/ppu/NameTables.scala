@@ -6,5 +6,4 @@ package nesscala.nes.ppu
 class NameTables {
 
 
-
 }
