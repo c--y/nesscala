@@ -22,6 +22,15 @@ class IntUtilsSpec extends FlatSpec {
     val r: Int = i + s
     println(r)
 
+    println((us - 1).toShort)
+    println((us - 1).toBinaryString)
+
+    val b1: Byte = 0
+    val b2: Byte = 1
+    println((b1 - b2))
+    println((b1 - b2).toBinaryString)
+    println((b1 - b2).toHexString)
+
   }
 
 }

@@ -134,4 +134,7 @@ class Cpu (val ram: Memory) {
     cycles += (if (!samePage(pc - 1, address)) 2 else 1)
   }
 
+  def runStep(): Unit = {
+
+  }
 }

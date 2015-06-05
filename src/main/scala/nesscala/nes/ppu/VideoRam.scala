@@ -5,9 +5,18 @@ package nesscala.nes.ppu
  */
 class VideoRam {
 
-  // 16kb
-  val units = new Array[Byte](0x4000)
+  // Actual 16kb
+  // val units = new Array[Byte](0x4000)
+  val nameTables = new NameTables
 
+  val patternTables = Array.fill(2){new PatternTable}
 
+  def read(address: Int): Int = {
+    0
+  }
+
+  def write(address: Int, value: Byte): Unit = {
+
+  }
 
 }

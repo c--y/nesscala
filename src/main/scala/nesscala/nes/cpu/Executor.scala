@@ -163,7 +163,7 @@ class Executor(cpu: Cpu) {
   fnTable(0xb6) = defineOp(LDX _, 4, cpu.zeroPageIndexedAddress _, cpu.y)
   // Implied
   fnTable(0xb8) = defineOp(CLV, 2, null, -1)
-  fnTable(0xb9) = defineOp(LDA _ _, 6, cpu.absoluteIndexedAddress _, cpu.y)
+  fnTable(0xb9) = defineOp(LDA _, 6, cpu.absoluteIndexedAddress _, cpu.y)
   // Implied
   fnTable(0xba) = defineOp(TSX, 2, null, -1)
   fnTable(0xbc) = defineOp(LDY _, 4, cpu.absoluteIndexedAddress _, cpu.x)
