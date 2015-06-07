@@ -59,6 +59,10 @@ class Ppu(val cpu: Cpu) {
   // 2 PatternTables in video ram
   val patternTables = Array.fill(2) {new Array[Byte](0x1000)}
 
+  // 0x0 ~ 0x10, Image palette
+  // 0x10 ~ 0x20, Sprite palette
+  val palettes = new Array[Byte](0x20)
+
   var oam = new SpriteRam(64)
 
   var secondaryOam = new SpriteRam(8)
@@ -116,18 +120,62 @@ class Ppu(val cpu: Cpu) {
     writeLatch = !writeLatch
   }
 
+  /**
+   *         Programmer Memory Map
+   *  +---------+-------+-------+--------------------+
+   *  | Address | Size  | Flags | Description        |
+   *  +---------+-------+-------+--------------------+
+   *  | $0000   | $1000 | C     | Pattern Table #0   |
+   *  | $1000   | $1000 | C     | Pattern Table #1   |
+   *  | $2000   | $3C0  |       | Name Table #0      |
+   *  | $23C0   | $40   |  N    | Attribute Table #0 |
+   *  | $2400   | $3C0  |  N    | Name Table #1      |
+   *  | $27C0   | $40   |  N    | Attribute Table #1 |
+   *  | $2800   | $3C0  |  N    | Name Table #2      |
+   *  | $2BC0   | $40   |  N    | Attribute Table #2 |
+   *  | $2C00   | $3C0  |  N    | Name Table #3      |
+   *  | $2FC0   | $40   |  N    | Attribute Table #3 |
+   *  | $3000   | $F00  |   R   |                    |
+   *  | $3F00   | $10   |       | Image Palette #1   |
+   *  | $3F10   | $10   |       | Sprite Palette #1  |
+   *  | $3F20   | $E0   |    P  |                    |
+   *  | $4000   | $C000 |     F |                    |
+   *  +---------+-------+-------+--------------------+
+   *
+   *                      C = Possibly CHR-ROM
+   *                      N = Mirrored (see Subsection G)
+   *                      P = Mirrored (see Subsection H)
+   *                      R = Mirror of $2000-2EFF (VRAM)
+   *                      F = Mirror of $0000-3FFF (VRAM)
+   */
+
   def writeData(value: Byte): Unit = {
     rAddress match {
-      case _ if rAddress > 0x3000 => {}
-      case _ if rAddress >= 0x2000 && rAddress < 0x3000 => {}
+      // Mirrored Address
+      case _ if rAddress >= 0x3000 =>
+        writeMirroredData(rAddress, value)
+      // NameTables mirror
+      case _ if rAddress >= 0x2000 && rAddress < 0x3000 =>
+        nameTables.write(rAddress, value)
+      // PattenTables
       case _ if rAddress < 0x2000 => {
 
       }
-      case _ => {}
+      case _ =>
     }
 
-    rAddress += 1
+    incAddress()
   }
+
+  def writeMirroredData(address: Int, value: Byte): Unit =
+    address match {
+      // Palettes
+      case _ if address > 0x3f00 =>
+        palettes(if ((address & 0xf) == 0) 0 else (address & 0x1f)) = value
+      // NameTables (0x3000 ~ 0x3f00)
+      case _ =>
+        nameTables.write(address - 0x1000, value)
+    }
 
   def readData(): Byte = {
     0

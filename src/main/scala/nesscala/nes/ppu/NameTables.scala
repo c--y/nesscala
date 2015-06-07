@@ -1,6 +1,9 @@
 package nesscala.nes.ppu
 
 /**
+ * NameTable
+ *
+ *
  * Created by chenyan on 15-5-31.
  */
 class NameTables {
