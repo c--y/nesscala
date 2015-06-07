@@ -27,6 +27,14 @@ class ControlRegister {
   def baseNametable(): Int =
     v & 0x03
 
+  def baseNametableAddress(): Int = (v & 0x03) match {
+    case 0x00 => 0x2000
+    case 0x01 => 0x2400
+    case 0x02 => 0x2800
+    case 0x03 => 0x2c00
+    case _ => throw new RuntimeException("Invalid base nametable index")
+  }
+
   def setBaseNametable(idx: Int): Unit = {
     v = ((v | 0x03) & (idx & 0x03)).toByte
   }
@@ -46,11 +54,22 @@ class ControlRegister {
   def spritePattern(): Boolean =
     BitUtils.isSet(v, 3)
 
+  def spritePatternAddress(): Int = spritePattern() match {
+    case true => 0x1000
+    case false => 0x0
+  }
+
   def setSpritePattern(value: Boolean) =
     v = BitUtils.setBit(v, 3, value)
 
   def backgroundPattern(): Boolean =
     BitUtils.isSet(v, 4)
+
+  // Ignored in 8 * 16 mode
+  def backgroundPatternAddress(): Int = backgroundPattern() match {
+    case true => 0x1000
+    case false => 0x0
+  }
 
   def setBackgroundPattern(value: Boolean) =
     v = BitUtils.setBit(v, 4, value)

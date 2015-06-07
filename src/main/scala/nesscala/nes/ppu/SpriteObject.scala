@@ -8,10 +8,13 @@ import nesscala.util.BitUtils
  *
  * Created by chenyan on 15-6-3.
  */
-class SpriteAttribute(val y: Byte,
-                      val index: Byte,
-                      val attribute: Byte,
-                      val x: Byte) {
+class SpriteObject {
+
+  var y: Byte = 0
+  // Tile index
+  var index: Byte = 0
+  var attribute: Byte = 0
+  var x: Byte = 0
 
   def upperColor2Bits(): Int =
     attribute & 0x03

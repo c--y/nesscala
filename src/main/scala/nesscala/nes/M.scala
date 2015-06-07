@@ -15,7 +15,7 @@ object M {
 
   val cpu: Cpu = new Cpu(ram)
 
-  val ppu: Ppu = new Ppu
+  val ppu: Ppu = new Ppu(cpu)
 
   val apu: Apu = new Apu
 

@@ -31,6 +31,9 @@ class IntUtilsSpec extends FlatSpec {
     println((b1 - b2).toBinaryString)
     println((b1 - b2).toHexString)
 
+    var ib: Byte = -3
+    println(ib)
+    println(IntUtils.toUnsigned(ib))
   }
 
 }

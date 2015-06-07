@@ -11,22 +11,36 @@ package nesscala.nes.ppu
  *
  * Created by chenyan on 15-6-3.
  */
-class SpriteRam {
+class SpriteRam(val size: Int) {
 
-  // 256bytes
-  var units: Array[Byte] = null
+  // 4 bytes
+  val SpriteSize = 4
 
-  val sprites = new Array[SpriteAttribute](64)
+  // 256 bytes
+  var stores = new Array[Byte](SpriteSize * size)
 
-  def load(bytes: Array[Byte]): Unit = {
-    require(bytes.length == 0x100)
+  // 64 sprites
+  val sprites = Array.fill(size) {new SpriteObject}
 
-    for (i <- 0 until 64) {
-      val j = i * 4
-      sprites(i) = new SpriteAttribute(
-        bytes(j), bytes(j + 1), bytes(j + 2), bytes(j + 3))
+  def get(index: Int): SpriteObject =
+    sprites(index)
+
+  def read(index: Int): Byte =
+    stores(index)
+
+  def write(index: Int, value: Byte): Unit = {
+    require(index >= 0 && index < size * SpriteSize)
+    
+    stores(index) = value
+
+    val i = index / SpriteSize
+    val m = index % SpriteSize
+
+    m match {
+      case 0x0 => sprites(i).y = value
+      case 0x1 => sprites(i).index = value
+      case 0x2 => sprites(i).attribute = value
+      case 0x3 => sprites(i).x = value
     }
-
-    units = bytes
   }
 }

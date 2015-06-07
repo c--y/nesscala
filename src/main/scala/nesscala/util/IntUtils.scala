@@ -6,9 +6,9 @@ package nesscala.util
 object IntUtils {
 
   def toUnsigned(i: Short): Int =
-    if (i < 0) Short.MaxValue - i else i
+    i & 0xffff
 
   def toUnsigned(b: Byte): Int =
-    if (b < 0) Byte.MaxValue - b else b
+    b & 0xff
 
 }
