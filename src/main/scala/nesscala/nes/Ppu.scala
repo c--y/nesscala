@@ -22,7 +22,7 @@ import nesscala.rom.Mapper
  *
  * Created by chenyan on 15-5-30.
  */
-class Ppu(val cpu: Cpu, var rom: Mapper) {
+class Ppu() {
 
   // 16 bytes in pattern table
   val TileSize = 16
@@ -88,6 +88,36 @@ class Ppu(val cpu: Cpu, var rom: Mapper) {
   // output
   val frameBuffer = new Array[Color](0xf000)
 
+  def readRegister(address: Int): Byte =
+    (address & 0x7) match {
+      case 0x2 =>
+        readStatus().v
+      case 0x4 =>
+        readOamData()
+      case 0x7 =>
+        readData()
+      case _ => 0
+    }
+
+  def writeRegister(address: Int, value: Byte): Unit =
+    (address & 0x7) match {
+      case 0x0 =>
+        rControl.v = value
+        // TODO rLatchTemp 需要做相应调整?
+      case 0x1 =>
+        rMask.v = value
+      case 0x3 =>
+        rOamAddr = value
+      case 0x4 =>
+        writeOamData(value)
+      case 0x5 =>
+        writeScroll(value)
+      case 0x6 =>
+        writeAddress(value)
+      case 0x7 =>
+        writeData(value)
+    }
+
   def readStatus(): StatusRegister = {
     writeLatch = true
     // Post-render scanline (240)
@@ -105,10 +135,6 @@ class Ppu(val cpu: Cpu, var rom: Mapper) {
     rStatus
   }
 
-  def writeOamAddress(value: Byte): Unit = {
-    this.rOamAddr = value
-  }
-
   def writeOamData(value: Byte): Unit = {
     oam.write(this.rOamAddr, value)
     this.rOamAddr += 1
@@ -119,11 +145,11 @@ class Ppu(val cpu: Cpu, var rom: Mapper) {
     oam.read(this.rOamAddr)
 
   def writeDma(v: Byte): Unit = {
-    cpu.cycles = 512
+    M.cpu.cycles = 512
 
     val address = v * 0x100
     for (i <- 0 until 0x100) {
-      val v = cpu.ram.read(address + i)
+      val v = M.ram.read(address + i)
       oam.write(i, v.toByte)
     }
   }
@@ -224,7 +250,7 @@ class Ppu(val cpu: Cpu, var rom: Mapper) {
     } else if (rAddress < 0x3f00) {
       result = readBuffer
       if (rAddress < 0x2000) {
-        readBuffer = rom.readVram(rAddress).toByte
+        readBuffer = M.rom.readVram(rAddress).toByte
         // Mmc2
       } else {
         //
@@ -265,7 +291,7 @@ class Ppu(val cpu: Cpu, var rom: Mapper) {
       case 240 =>
         if (cycle == 1) {
           if (!suppressVbl) rStatus.setInVblank(true)
-          if (rControl.nmiOnVblank() && !suppressNmi) cpu.requestInterrupt(InterruptNmi)
+          if (rControl.nmiOnVblank() && !suppressNmi) M.cpu.requestInterrupt(InterruptNmi)
           raster()
         }
       // End of vblank

@@ -9,7 +9,7 @@ import nesscala.util.{IntUtils, BitUtils}
  *
  * Created by chenyan on 15-5-30.
  */
-class Cpu (val ram: Memory, var rom: Mapper) {
+class Cpu () {
 
   // Registers
   // pc: Short
@@ -35,13 +35,13 @@ class Cpu (val ram: Memory, var rom: Mapper) {
   var interrupt: Interrupt = InterruptNone
 
   def pushStack(v: Byte): Unit = {
-    ram.write((0x100 + sp).toShort, v)
+    M.ram.write((0x100 + sp).toShort, v)
     sp = (sp - 1).toByte
   }
 
   def pullStack(): Int = {
     sp = (sp + 1).toByte
-    ram.read((0x100 + sp).toShort)
+    M.ram.read((0x100 + sp).toShort)
   }
 
   // Address modes
@@ -54,15 +54,15 @@ class Cpu (val ram: Memory, var rom: Mapper) {
   }
 
   def absoluteAddress(): Int = {
-    val high = ram.read(pc + 1)
-    val low = ram.read(pc + 1)
+    val high = M.ram.read(pc + 1)
+    val low = M.ram.read(pc + 1)
     pc += 2
     BitUtils.makeWord(low.toByte, high.toByte)
   }
 
   def zeroPageAddress(): Int = {
     pc += 1
-    ram.read(pc - 1)
+    M.ram.read(pc - 1)
   }
 
   def indirectAddress(): Int = {
@@ -70,21 +70,21 @@ class Cpu (val ram: Memory, var rom: Mapper) {
   }
 
   def indirectAbsoluteAddress(address: Int): Int = {
-    val high = ram.read(address + 1)
-    val low = ram.read(address)
+    val high = M.ram.read(address + 1)
+    val low = M.ram.read(address)
 
     val highAddr = BitUtils.makeWord(low.toByte, high.toByte)
     val lowAddr = BitUtils.makeWord((low + 1).toByte, high.toByte)
 
-    val hhigh = ram.read(highAddr)
-    val llow = ram.read(lowAddr)
+    val hhigh = M.ram.read(highAddr)
+    val llow = M.ram.read(lowAddr)
 
     BitUtils.makeUint8(llow.toByte, hhigh.toByte)
   }
 
   def absoluteIndexedAddress(index: Byte): Int = {
-    val high = ram.read(pc + 1)
-    val low = ram.read(pc)
+    val high = M.ram.read(pc + 1)
+    val low = M.ram.read(pc)
 
     //val uindex = IntUtils.toUnsigned(index)
     var address = BitUtils.makeWord(low.toByte, high.toByte)
@@ -97,23 +97,23 @@ class Cpu (val ram: Memory, var rom: Mapper) {
   }
 
   def zeroPageIndexedAddress(index: Byte): Int = {
-    val address = ram.read(pc)
+    val address = M.ram.read(pc)
     pc += 1
     address + index
   }
 
   def indexedIndirectAddress(): Int = {
-    val address = ram.read(pc) + x
+    val address = M.ram.read(pc) + x
     pc += 1
-    val high = ram.read(address + 1)
-    val low = ram.read(address)
+    val high = M.ram.read(address + 1)
+    val low = M.ram.read(address)
     BitUtils.makeWord(low.toByte, high.toByte)
   }
 
   def indirectIndexedAddress(): Int = {
-    val address = ram.read(pc)
-    val high = ram.read(address + 1)
-    val low = ram.read(address)
+    val address = M.ram.read(pc)
+    val high = M.ram.read(address + 1)
+    val low = M.ram.read(address)
 
     var indAddress = BitUtils.makeWord(low.toByte, high.toByte)
     // 位于不同页
@@ -125,7 +125,7 @@ class Cpu (val ram: Memory, var rom: Mapper) {
   }
 
   def relativeAddress(): Int = {
-    var address = ram.read(pc)
+    var address = M.ram.read(pc)
     address = if (address < 0x80) address + pc else address + (pc - 0x100)
     address + 1
   }
@@ -146,7 +146,7 @@ class Cpu (val ram: Memory, var rom: Mapper) {
     interrupt match {
       case InterruptIrq =>
         // TODO mmc5
-        if (rom.getType() == 'mmc5) {
+        if (M.rom.getType() == 'mmc5) {
 
         } else if (!p.interrupt()) {
           irq()

@@ -9,17 +9,16 @@ import nesscala.rom.{NesFileLoader, Mapper}
  */
 object M {
 
-  val MemorySize = 0x100000
 
-  val ram: Memory = new Memory(MemorySize)
+  val ram: Memory = new Memory
 
-  val cpu: Cpu = new Cpu(ram, rom)
+  val cpu: Cpu = new Cpu
 
   val apu: Apu = new Apu
 
   var rom: Mapper = null
 
-  val ppu: Ppu = new Ppu(cpu, rom)
+  val ppu: Ppu = new Ppu()
 
   def loadRom(path: Path): Unit = {
     require(path != null)
