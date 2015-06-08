@@ -1,6 +1,7 @@
 package nesscala.nes
 
-import nesscala.nes.cpu.StatusRegister
+import nesscala.nes.cpu._
+import nesscala.rom.Mapper
 import nesscala.util.{IntUtils, BitUtils}
 
 /**
@@ -8,7 +9,7 @@ import nesscala.util.{IntUtils, BitUtils}
  *
  * Created by chenyan on 15-5-30.
  */
-class Cpu (val ram: Memory) {
+class Cpu (val ram: Memory, var rom: Mapper) {
 
   // Registers
   // pc: Short
@@ -22,7 +23,7 @@ class Cpu (val ram: Memory) {
 
   var y: Byte = 0
 
-  val p: StatusRegister = new StatusRegister
+  val p = new StatusRegister
 
   // Environments
   var cycles: Long = 0
@@ -30,6 +31,8 @@ class Cpu (val ram: Memory) {
   var opcode: Byte = 0
 
   var opcodeCycle: Long = 0
+
+  var interrupt: Interrupt = InterruptNone
 
   def pushStack(v: Byte): Unit = {
     ram.write((0x100 + sp).toShort, v)
@@ -135,6 +138,42 @@ class Cpu (val ram: Memory) {
   }
 
   def runStep(): Unit = {
+    if (cycles > 0) {
+      cycles -= 1
+      return
+    }
+
+    interrupt match {
+      case InterruptIrq =>
+        // TODO mmc5
+        if (rom.getType() == 'mmc5) {
+
+        } else if (!p.interrupt()) {
+          irq()
+          interrupt = InterruptNone
+        }
+      case InterruptNmi =>
+        nmi()
+        interrupt = InterruptNone
+      case InterruptReset =>
+        reset()
+        interrupt = InterruptNone
+    }
 
   }
+
+  def irq(): Unit = {
+
+  }
+
+  def nmi(): Unit = {
+
+  }
+
+  def reset(): Unit = {
+
+  }
+
+  def requestInterrupt(r: Interrupt): Unit =
+    interrupt = r
 }

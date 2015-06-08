@@ -8,7 +8,7 @@ import org.scalatest.FlatSpec
 class PpuSpec extends FlatSpec {
 
   "Ascii graph" should "be drew on console" in {
-    val ppu = new Ppu(null)
+    val ppu = new Ppu(null, null)
     val bytes = Array(
         0x10, 0x00, 0x44, 0x00, 0xfe, 0x00, 0x82,
         0x00, 0x00, 0x28, 0x44, 0x82, 0x00, 0x82, 0x82, 0x00).map(_.toByte)

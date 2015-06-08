@@ -19,4 +19,6 @@ trait Mapper {
 
   def writeVram(address: Int, value: Byte): Unit
 
+  def getType(): Symbol
+
 }

@@ -1,6 +1,10 @@
 package nesscala.nes
 
+import java.awt.Color
+
+import nesscala.nes.cpu.InterruptNmi
 import nesscala.nes.ppu._
+import nesscala.rom.Mapper
 
 /**
  *
@@ -18,7 +22,7 @@ import nesscala.nes.ppu._
  *
  * Created by chenyan on 15-5-30.
  */
-class Ppu(val cpu: Cpu) {
+class Ppu(val cpu: Cpu, var rom: Mapper) {
 
   // 16 bytes in pattern table
   val TileSize = 16
@@ -53,6 +57,9 @@ class Ppu(val cpu: Cpu) {
   // 0x2007
   var rData: Byte = 0
 
+  // PPUDATA read buffer (post-fetch)
+  var readBuffer: Byte = 0
+
   // 4 NameTables
   val nameTables = new NameTables
 
@@ -72,6 +79,31 @@ class Ppu(val cpu: Cpu) {
   var scanLine = 0
 
   var frameCount = 0
+
+  // flags
+  var suppressNmi = false
+
+  var suppressVbl = false
+
+  // output
+  val frameBuffer = new Array[Color](0xf000)
+
+  def readStatus(): StatusRegister = {
+    writeLatch = true
+    // Post-render scanline (240)
+    // The PPU just idles during this scanline.
+    // Even though accessing PPU memory from the program would be safe here,
+    //  the VBlank flag isn't set until after this scanline.
+    if (cycle == 1 && scanLine == 240) {
+      suppressNmi = true
+      suppressVbl = true
+    } else {
+      suppressNmi = false
+      suppressVbl = false
+      rStatus.setInVblank(false)
+    }
+    rStatus
+  }
 
   def writeOamAddress(value: Byte): Unit = {
     this.rOamAddr = value
@@ -177,8 +209,42 @@ class Ppu(val cpu: Cpu) {
         nameTables.write(address - 0x1000, value)
     }
 
+  /**
+   * Read data from 0x2007 port
+   *
+   * Using one-byte read buffer.
+   *
+   * @return
+   */
   def readData(): Byte = {
-    0
+    var result: Byte = 0
+    if (rAddress >= 0x2000 && rAddress < 0x3000) {
+      result = readBuffer
+      readBuffer = nameTables.read(rAddress).toByte
+    } else if (rAddress < 0x3f00) {
+      result = readBuffer
+      if (rAddress < 0x2000) {
+        readBuffer = rom.readVram(rAddress).toByte
+        // Mmc2
+      } else {
+        //
+      }
+    } else { // >= 0x3f00
+      val bufferAddress = rAddress - 0x1000
+      bufferAddress match {
+        case _ if bufferAddress >= 0x2000 && bufferAddress < 0x3000 =>
+          readBuffer = nameTables.read(bufferAddress).toByte
+        case _ => {} // TODO
+      }
+
+      result = palettes(if ((rAddress & 0xf) == 0) 0 else (rAddress & 0x1f))
+      if (rAddress < 0x2000) {
+        // TODO Mmc2
+      }
+    }
+
+    incAddress()
+    result
   }
 
   def incAddress(): Unit = {
@@ -198,7 +264,9 @@ class Ppu(val cpu: Cpu) {
       // Post-render line
       case 240 =>
         if (cycle == 1) {
-
+          if (!suppressVbl) rStatus.setInVblank(true)
+          if (rControl.nmiOnVblank() && !suppressNmi) cpu.requestInterrupt(InterruptNmi)
+          raster()
         }
       // End of vblank
       case 260 =>
@@ -229,7 +297,7 @@ class Ppu(val cpu: Cpu) {
 
             }
           case 260 => if (rControl.spritePattern() && !rControl.backgroundPattern()) {
-              // Mmc3 hook
+              //TODO Mmc3 hook
             }
         }
       // Pre-render scanLine
@@ -248,7 +316,7 @@ class Ppu(val cpu: Cpu) {
       cycle = 0
       scanLine += 1
 
-      // Mmc5
+      // TODO Mmc5
     }
   }
 
@@ -261,8 +329,13 @@ class Ppu(val cpu: Cpu) {
     var sprCount = 0
     var sprHeight = if (rControl.spriteSize()) 16 else 8
 
+  }
 
-
+  /**
+   * 渲染至界面
+   */
+  def raster(): Unit = {
+    // Set a condition variable.
   }
 
   /**
