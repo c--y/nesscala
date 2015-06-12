@@ -5,6 +5,7 @@ import java.awt.Color
 import nesscala.nes.cpu.InterruptNmi
 import nesscala.nes.ppu._
 import nesscala.rom.Mapper
+import nesscala.util.IntUtils
 
 /**
  *
@@ -43,6 +44,7 @@ class Ppu() {
   // 0x2004
   var rOamData: Byte = 0
 
+  // Address latch, used by PPUADDR & PPUSCROLL
   var writeLatch: Boolean = false
 
   // 0x2005, Write twice
@@ -178,6 +180,20 @@ class Ppu() {
     writeLatch = !writeLatch
   }
 
+  def spritePatternAddress(index: Int): Int =
+    if (rControl.spriteSize()) {
+      if ((index & 0x01) != 0)
+        0x1000 | (index >> 1) * 0x20
+      else
+        (index >> 1) * 0x20
+    } else {
+      (index * 0x10) * rControl.spritePatternAddress()
+    }
+
+
+  def backgroundPatternAddress(index: Int): Int =
+    rControl.backgroundPatternAddress() | (index << 4) | (rAddress >> 12)
+
   /**
    *         Programmer Memory Map
    *  +---------+-------+-------+--------------------+
@@ -311,7 +327,8 @@ class Ppu() {
         cycle match {
           case 254 => if (rMask.background()) {
               // Mmc5
-              // renderTileRow()
+
+              evalBackground()
             }
 
             if (rMask.sprite()) {
@@ -346,14 +363,22 @@ class Ppu() {
     }
   }
 
+
   /**
-   * Evaluate a scanLine
+   * Evaluate the background of a scanline.
+   */
+  def evalBackground(): Unit = {
+
+  }
+
+  /**
+   * Evaluate a scanLine.
    *
    * @param line
    */
   def evalSprites(line: Int): Unit = {
     var sprCount = 0
-    var sprHeight = if (rControl.spriteSize()) 16 else 8
+    val sprHeight = if (rControl.spriteSize()) 16 else 8
 
   }
 
