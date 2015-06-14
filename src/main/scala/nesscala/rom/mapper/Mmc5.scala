@@ -32,7 +32,5 @@ class Mmc5
 
   override def readVram(address: Int): Int = ???
 
-  override def step(): Unit = ???
-
   override def readTile(address: Int): Array[Byte] = ???
 }

@@ -41,8 +41,6 @@ class Unrom(val nesFile: NesFile) extends Mapper {
     return IntUtils.toUnsigned(nesFile.chrBanks(0)(address & 0xfff))
   }
 
-  override def step(): Unit = {}
-
   override def getType(): Symbol = 'unrom
 
   override def readTile(address: Int): Array[Byte] = ???

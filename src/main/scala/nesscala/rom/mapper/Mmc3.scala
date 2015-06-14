@@ -20,8 +20,6 @@ class Mmc3(val nesFile: NesFile) extends Mapper {
 
   override def readVram(address: Int): Int = ???
 
-  override def step(): Unit = ???
-
   override def getType(): Symbol = 'mmc3
 
   override def readTile(address: Int): Array[Byte] = ???
