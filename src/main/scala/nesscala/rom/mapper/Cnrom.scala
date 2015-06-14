@@ -22,4 +22,6 @@ class Cnrom(val nesFile: NesFile) extends Mapper{
   override def step(): Unit = ???
 
   override def getType(): Symbol = 'cnrom
+
+  override def readTile(address: Int): Array[Byte] = ???
 }

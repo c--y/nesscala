@@ -1,6 +1,6 @@
 package nesscala.nes.cpu
 
-import nesscala.nes.Cpu
+import nesscala.nes.{M, Cpu}
 import nesscala.util.{BitUtils, IntUtils}
 
 /**
@@ -215,7 +215,7 @@ class Executor(cpu: Cpu) {
 
   // Basic operations
   def ADC(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     val carry = if (cpu.p.carry()) 1 else 0
     val result = cpu.acc + v + carry
     val old = cpu.acc
@@ -228,7 +228,7 @@ class Executor(cpu: Cpu) {
   }
 
   def AND(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     cpu.acc = (cpu.acc & v).toByte
 
     cpu.p.testAndSetNegative(cpu.acc)
@@ -236,11 +236,11 @@ class Executor(cpu: Cpu) {
   }
 
   def ASL(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     cpu.p.setCarry((v & 0x80) > 0)
 
     val shiftV = (v << 1).toByte
-    cpu.ram.write(address, shiftV)
+    M.ram.write(address, shiftV)
 
     cpu.p.testAndSetNegative(shiftV)
     cpu.p.testAndSetZero(shiftV)
@@ -295,7 +295,7 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def BIT(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     val result = (cpu.acc & v).toByte
     cpu.p.testAndSetNegative(result)
     cpu.p.testAndSetOverflow(result)
@@ -368,8 +368,8 @@ class Executor(cpu: Cpu) {
     // set brk bit to 1
     cpu.p.setBrk(true)
 
-    val h = cpu.ram.read(0xffff)
-    val l = cpu.ram.read(0xfffe)
+    val h = M.ram.read(0xffff)
+    val l = M.ram.read(0xfffe)
 
     cpu.pc = BitUtils.makeWord(l.toByte, h.toByte)
   }
@@ -441,7 +441,7 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def CMP(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     compare(cpu.acc, v)
   }
 
@@ -451,7 +451,7 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def CPX(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     compare(cpu.x, v)
   }
 
@@ -461,7 +461,7 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def CPY(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     compare(cpu.y, v)
   }
 
@@ -471,10 +471,10 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def DEC(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     val result = v - 1
 
-    cpu.ram.write(address, result.toByte)
+    M.ram.write(address, result.toByte)
     cpu.p.setSign(result < 0)
     cpu.p.setZero(result == 0)
   }
@@ -501,7 +501,7 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def EOR(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     cpu.acc = (cpu.acc ^ v).toByte
     cpu.p.testAndSetZero(cpu.acc)
     cpu.p.testAndSetNegative(cpu.acc)
@@ -513,12 +513,12 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def INC(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     val result = (v + 1).toByte
     cpu.p.testAndSetZero(result)
     cpu.p.testAndSetNegative(result)
 
-    cpu.ram.write(address, result)
+    M.ram.write(address, result)
   }
 
   def INX(): Unit = {
@@ -560,7 +560,7 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def LDA(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     cpu.acc = v.toByte
 
     cpu.p.testAndSetZero(cpu.acc)
@@ -568,7 +568,7 @@ class Executor(cpu: Cpu) {
   }
 
   def LDX(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     cpu.x = v.toByte
 
     cpu.p.testAndSetZero(cpu.x)
@@ -576,7 +576,7 @@ class Executor(cpu: Cpu) {
   }
 
   def LDY(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     cpu.y = v.toByte
 
     cpu.p.testAndSetZero(cpu.y)
@@ -589,9 +589,9 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def LSR(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     val result = (v >> 1).toByte
-    cpu.ram.write(address, result)
+    M.ram.write(address, result)
 
     cpu.p.testAndSetZero(result)
     cpu.p.testAndSetNegative(result)
@@ -611,9 +611,9 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def ORA(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
     val result = (cpu.acc | v).toByte
-    cpu.ram.write(address, result)
+    M.ram.write(address, result)
 
     cpu.p.testAndSetZero(result)
     cpu.p.testAndSetNegative(result)
@@ -653,14 +653,14 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def ROL(address: Int): Unit = {
-    var v = cpu.ram.read(address)
+    var v = M.ram.read(address)
     val tempCarry = v & 0x80
     v = v << 1
     if (cpu.p.carry()) v += 1
     cpu.p.setCarry(tempCarry > 0x0)
 
     val result = v.toByte
-    cpu.ram.write(address, result)
+    M.ram.write(address, result)
     cpu.p.testAndSetZero(result)
     cpu.p.testAndSetNegative(result)
   }
@@ -682,14 +682,14 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def ROR(address: Int): Unit = {
-    var v = cpu.ram.read(address)
+    var v = M.ram.read(address)
     val tempCarry = v & 0x1
     v = v >> 1
     if (cpu.p.carry()) v += 0x80
     cpu.p.setCarry(tempCarry > 0x0)
 
     val result = v.toByte
-    cpu.ram.write(address, result)
+    M.ram.write(address, result)
     cpu.p.testAndSetZero(result)
     cpu.p.testAndSetNegative(result)
   }
@@ -733,7 +733,7 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def SBC(address: Int): Unit = {
-    val v = cpu.ram.read(address)
+    val v = M.ram.read(address)
 
     val tmp = cpu.acc
     cpu.acc = (tmp - v).toByte
@@ -773,7 +773,7 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def STA(address: Int): Unit = {
-    cpu.ram.write(address, cpu.acc)
+    M.ram.write(address, cpu.acc)
   }
 
   /**
@@ -782,7 +782,7 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def STX(address: Int): Unit = {
-    cpu.ram.write(address, cpu.x)
+    M.ram.write(address, cpu.x)
   }
 
   /**
@@ -791,7 +791,7 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def STY(address: Int): Unit = {
-    cpu.ram.write(address, cpu.y)
+    M.ram.write(address, cpu.y)
   }
 
   /**

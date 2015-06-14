@@ -5,7 +5,8 @@ import nesscala.rom.{NesFile, Mapper}
 /**
  * Created by chenyan on 15-6-8.
  */
-class Mmc5(val nesFile: NesFile) extends Mapper {
+class Mmc5
+(val nesFile: NesFile) extends Mapper {
 
   val extendedRam = new Array[Byte](0x400)
 
@@ -33,4 +34,5 @@ class Mmc5(val nesFile: NesFile) extends Mapper {
 
   override def step(): Unit = ???
 
+  override def readTile(address: Int): Array[Byte] = ???
 }

@@ -20,12 +20,12 @@ class SpriteObject {
     attribute & 0x03
 
   def backgroundPrior() =
-    BitUtils.isSet(attribute, 2)
+    BitUtils.isSet(attribute, 5)
 
   def horizontalFlip() =
-    BitUtils.isSet(attribute, 3)
+    BitUtils.isSet(attribute, 6)
 
   def verticalFlip() =
-    BitUtils.isSet(attribute, 4)
+    BitUtils.isSet(attribute, 7)
 
 }

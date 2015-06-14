@@ -15,6 +15,8 @@ trait Mapper {
 
   def step(): Unit
 
+  def readTile(address: Int): Array[Byte]
+
   def readVram(address: Int): Int
 
   def writeVram(address: Int, value: Byte): Unit
