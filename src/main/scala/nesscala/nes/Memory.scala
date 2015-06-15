@@ -16,9 +16,9 @@ class Memory() {
   def read(address: Int): Int =
     address match {
       case _ if address > 0x2008 && address < 0x4000 =>
-        M.ppu.readRegister(0x2000 + address % 0x8)
+        IntUtils.toUnsigned(M.ppu.readRegister(0x2000 + address % 0x8))
       case _ if address <= 0x2007 && address >= 0x2000 =>
-        M.ppu.readRegister(address)
+        IntUtils.toUnsigned(M.ppu.readRegister(address))
       case 0x4016 =>
         // TODO Pads[0].read
         0
@@ -35,7 +35,7 @@ class Memory() {
         0
 
       case _ =>
-        store(address)
+        IntUtils.toUnsigned(store(address))
 
     }
 

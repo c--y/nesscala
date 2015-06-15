@@ -1,7 +1,7 @@
 package nesscala.nes
 
 import nesscala.nes.cpu._
-import nesscala.rom.Mapper
+import nesscala.rom.{Disassembler, Mapper}
 import nesscala.util.{IntUtils, BitUtils}
 
 /**
@@ -11,11 +11,13 @@ import nesscala.util.{IntUtils, BitUtils}
  */
 class Cpu () {
 
+  val executor = new Executor(this)
+
   // Registers
   // pc: Short
   var pc: Int = 0
 
-  var sp: Byte = 0
+  var sp: Byte = 0xfd.toByte
 
   var acc: Byte = 0
 
@@ -137,10 +139,10 @@ class Cpu () {
     cycles += (if (!samePage(pc - 1, address)) 2 else 1)
   }
 
-  def runStep(): Unit = {
+  def runStep(): Long = {
     if (cycles > 0) {
       cycles -= 1
-      return
+      return 1
     }
 
     interrupt match {
@@ -158,21 +160,37 @@ class Cpu () {
       case InterruptReset =>
         reset()
         interrupt = InterruptNone
+      case InterruptNone =>
+        {}
     }
 
+    val c = M.ram.read(pc)
+    executor.fnTable(c)()
+    println(Disassembler.dis(c, pc, this))
+    cycles
   }
 
   def irq(): Unit = {
-
+    val high = pc >> 8
+    val low = pc & 0xff
+    pushStack(high.toByte)
+    pushStack(low.toByte)
+    pushStack(p.v)
+    pc = BitUtils.makeWord(M.ram.read(0xfffe).toByte, M.ram.read(0xffff).toByte)
   }
 
   def nmi(): Unit = {
+    val high = pc >> 8
+    val low = pc & 0xff
+    pushStack(high.toByte)
+    pushStack(low.toByte)
+    pushStack(p.v)
 
+    pc = BitUtils.makeWord(M.ram.read(0xfffa).toByte, M.ram.read(0xfffb).toByte)
   }
 
-  def reset(): Unit = {
-
-  }
+  def reset(): Unit =
+    pc = BitUtils.makeWord(M.ram.read(0xfffc).toByte, M.ram.read(0xfffd).toByte)
 
   def requestInterrupt(r: Interrupt): Unit =
     interrupt = r

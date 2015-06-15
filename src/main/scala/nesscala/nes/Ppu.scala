@@ -351,6 +351,8 @@ class Ppu() {
           case 260 => if (rControl.spritePattern() && !rControl.backgroundPattern()) {
               //TODO Mmc3 hook
             }
+          case _ => {}
+            // Do nothing
         }
       // Pre-render scanLine
       case -1 =>

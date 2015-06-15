@@ -18,7 +18,7 @@ import nesscala.util.BitUtils
  */
 class StatusRegister {
 
-  var v: Byte = 0
+  var v: Byte = 0x34
 
   def carry(): Boolean =
     BitUtils.isSet(v, 0)
@@ -99,4 +99,7 @@ class StatusRegister {
     val result = a - b - (1 - (if (carry()) 1 else 0))
     setOverflow(((a ^ result) & 0x80) != 0 && ((a ^ b) & 0x80) != 0)
   }
+
+  def reset(): Unit =
+    v = 0x34.toByte
 }
