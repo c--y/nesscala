@@ -37,13 +37,15 @@ class Cpu () {
   var interrupt: Interrupt = InterruptNone
 
   def pushStack(v: Byte): Unit = {
-    M.ram.write((0x100 + sp).toShort, v)
-    sp = (sp - 1).toByte
+    val _sp = IntUtils.toUnsigned(sp)
+    M.ram.write((0x100 + _sp).toShort, v)
+    sp = (_sp - 1).toByte
   }
 
   def pullStack(): Int = {
-    sp = (sp + 1).toByte
-    M.ram.read((0x100 + sp).toShort)
+    val _sp = IntUtils.toUnsigned(sp)
+    sp = (_sp + 1).toByte
+    M.ram.read((0x100 + _sp + 1).toShort)
   }
 
   // Address modes
@@ -57,7 +59,7 @@ class Cpu () {
 
   def absoluteAddress(): Int = {
     val high = M.ram.read(pc + 1)
-    val low = M.ram.read(pc + 1)
+    val low = M.ram.read(pc)
     pc += 2
     BitUtils.makeWord(low.toByte, high.toByte)
   }
@@ -165,8 +167,10 @@ class Cpu () {
     }
 
     val c = M.ram.read(pc)
+    pc += 1
+    //println(f"opcode=$c%X")
     executor.fnTable(c)()
-    println(Disassembler.dis(c, pc, this))
+    println("%s %s".format(Disassembler.dis(c, pc, this), this))
     cycles
   }
 
@@ -194,4 +198,14 @@ class Cpu () {
 
   def requestInterrupt(r: Interrupt): Unit =
     interrupt = r
+
+  override def toString(): String =
+    "[PC=0x%X, A=0x%X, X=0x%X, Y=0x%X, P=0x%X, SP=0x%X, CYCLE=0x%X]".format(
+      pc,
+      IntUtils.toUnsigned(acc),
+      IntUtils.toUnsigned(x),
+      IntUtils.toUnsigned(y),
+      IntUtils.toUnsigned(p.v),
+      IntUtils.toUnsigned(sp),
+      cycles)
 }

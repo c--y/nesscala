@@ -31,7 +31,7 @@ object BitUtils {
     (byte & byteMask(nth)) > 0
 
   def setBit(byte: Byte, nth: Byte, v: Boolean): Byte =
-    if (v) (byte | byteMask(nth)).toByte else (byte ^ byteMask(nth)).toByte
+    if (v) (byte | byteMask(nth)).toByte else (byte & (~byteMask(nth))).toByte
 
 
 }

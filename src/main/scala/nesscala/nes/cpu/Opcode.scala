@@ -1,6 +1,7 @@
 package nesscala.nes.cpu
 
 import nesscala.nes.Cpu
+import nesscala.rom.Disassembler
 import nesscala.util.IntUtils
 
 /**

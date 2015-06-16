@@ -36,6 +36,9 @@ object M {
   def run(): Unit = {
     require(rom != null, "Need rom loaded.")
 
+    cpu.reset()
+    cpu.pc = 0xc000
+
     while(true) {
       totalCycles += cpu.runStep()
 

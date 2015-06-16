@@ -7,7 +7,7 @@ import java.nio.file.Paths
  */
 object CpuTest {
 
-  val path = Paths.get(getClass.getResource("/test_roms/blargg_cpu/all_instrs.nes").getPath)
+  val path = Paths.get(getClass.getResource("/test_roms/nestest.nes").getPath)
   M.loadRom(path)
 
   def main(args: Array[String]): Unit = {

@@ -1,6 +1,7 @@
 package nesscala.rom.mapper
 
 import nesscala.rom.{NesFile, Mapper}
+import nesscala.util.IntUtils
 
 /**
  * INES Mapper 000
@@ -29,17 +30,14 @@ class Nrom(val nesFile: NesFile) extends Mapper {
   override def getType(): Symbol = 'nrom
 
   override def read(address: Int): Int =
-    if (address >= 0xc000) prgBanks(prgBanks.length - 1)(address & 0x3fff) else prgBanks(0)(address & 0x3fff)
+    IntUtils.toUnsigned(if (address >= 0xc000) prgBanks(prgBanks.length - 1)(address & 0x3fff) else prgBanks(0)(address & 0x3fff))
 
   override def write(address: Int, value: Byte): Unit = {
     // Do nothing
   }
 
   override def readVram(address: Int): Int =
-    if (address >= 0x1000)
-      vromBanks(vromBanks.length - 1)(address & 0xfff)
-    else
-      vromBanks(0)(address & 0xfff)
+    IntUtils.toUnsigned(if (address >= 0x1000) vromBanks(vromBanks.length - 1)(address & 0xfff) else vromBanks(0)(address & 0xfff))
 
   override def writeVram(address: Int, value: Byte): Unit =
     if (address >= 0x1000)

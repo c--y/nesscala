@@ -236,7 +236,7 @@ class Executor(cpu: Cpu) {
   }
 
   def BCC(address: Int): Unit = {
-    if (cpu.p.carry()) {
+    if (!cpu.p.carry()) {
       cpu.pc = address
       cpu.penaliseBranchCycles(address)
     } else {
@@ -529,7 +529,8 @@ class Executor(cpu: Cpu) {
    * @param address
    */
   def JSR(address: Int): Unit = {
-    val (high, low) = BitUtils.unpackWord(cpu.pc - 1)
+    // TODO need -1 ? cpu.pc - 1?
+    val (high, low) = BitUtils.unpackWord(cpu.pc)
     cpu.pushStack(high)
     cpu.pushStack(low)
     cpu.pc = address

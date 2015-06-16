@@ -18,7 +18,7 @@ import nesscala.util.BitUtils
  */
 class StatusRegister {
 
-  var v: Byte = 0x34
+  var v: Byte = 0x24
 
   def carry(): Boolean =
     BitUtils.isSet(v, 0)

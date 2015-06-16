@@ -6,9 +6,9 @@ package nesscala.util
 object IntUtils {
 
   def toUnsigned(i: Short): Int =
-    i & 0xffff
+    i & 0x0000ffff
 
   def toUnsigned(b: Byte): Int =
-    b & 0xff
+    b & 0x000000ff
 
 }
