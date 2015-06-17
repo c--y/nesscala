@@ -23,7 +23,7 @@ class Opcode(val cpu: Cpu,
 
   override def apply(): Unit = {
     require(fn0 != null || fn1 != null)
-    cpu.cycles = cycles
+    cpu.cycle = cycles
     val address =
       if (addrFn0 != null) addrFn0()
       else if(addrFn1 != null) addrFn1(evalAddressParam())

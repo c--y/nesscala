@@ -28,11 +28,11 @@ class Cpu () {
   val p = new StatusRegister
 
   // Environments
-  var cycles: Long = 0
+  var cycle: Long = 0
+
+  var totalCycles: Long = 0
 
   var opcode: Byte = 0
-
-  var opcodeCycle: Long = 0
 
   var interrupt: Interrupt = InterruptNone
 
@@ -93,7 +93,7 @@ class Cpu () {
     //val uindex = IntUtils.toUnsigned(index)
     var address = BitUtils.makeWord(low.toByte, high.toByte)
     // 不同页罚项
-    cycles += (if (!samePage(address, address + index)) 1 else 0)
+    cycle += (if (!samePage(address, address + index)) 1 else 0)
 
     address += index
     pc += 2
@@ -121,7 +121,7 @@ class Cpu () {
 
     var indAddress = BitUtils.makeWord(low.toByte, high.toByte)
     // 位于不同页
-    cycles += (if (!samePage(indAddress, indAddress + y)) 1 else 0)
+    cycle += (if (!samePage(indAddress, indAddress + y)) 1 else 0)
 
     indAddress += y
     pc += 1
@@ -138,12 +138,12 @@ class Cpu () {
 
   def penaliseBranchCycles(address: Int): Unit = {
     // 判定pc 与 address是否为同一页, 如果是则多加1个时钟周期
-    cycles += (if (!samePage(pc - 1, address)) 2 else 1)
+    cycle += (if (!samePage(pc - 1, address)) 2 else 1)
   }
 
   def runStep(): Long = {
-    if (cycles > 0) {
-      cycles -= 1
+    if (cycle > 0) {
+      cycle -= 1
       return 1
     }
 
@@ -167,11 +167,11 @@ class Cpu () {
     }
 
     val c = M.ram.read(pc)
-    pc += 1
-    //println(f"opcode=$c%X")
-    executor.fnTable(c)()
     println("%s %s".format(Disassembler.dis(c, pc, this), this))
-    cycles
+    pc += 1
+    executor.fnTable(c)()
+    totalCycles += cycle
+    cycle
   }
 
   def irq(): Unit = {
@@ -200,12 +200,13 @@ class Cpu () {
     interrupt = r
 
   override def toString(): String =
-    "[PC=0x%X, A=0x%X, X=0x%X, Y=0x%X, P=0x%X, SP=0x%X, CYCLE=0x%X]".format(
-      pc,
+    "A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%3d SL:%d".format(
       IntUtils.toUnsigned(acc),
       IntUtils.toUnsigned(x),
       IntUtils.toUnsigned(y),
       IntUtils.toUnsigned(p.v),
       IntUtils.toUnsigned(sp),
-      cycles)
+      totalCycles,
+      M.ppu.scanLine
+    )
 }

@@ -156,7 +156,7 @@ class Ppu() {
     oam.read(this.rOamAddr)
 
   def writeDma(v: Byte): Unit = {
-    M.cpu.cycles = 512
+    M.cpu.cycle = 512
 
     val address = v * 0x100
     for (i <- 0 until 0x100) {
